@@ -23,8 +23,7 @@
             @click="updateTradeMark(row)"
             >编辑</el-button
           >
-          <el-button type="danger" icon="el-icon-delete" size="mini"
-            >删除</el-button
+          <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteTradeMark(row)">删除</el-button
           >
         </template>
       </el-table-column>
@@ -69,9 +68,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addOrUpdateTradeMark"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addOrUpdateTradeMark">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -196,6 +193,33 @@ export default {
         }
       });
     },
+    // 删除品牌操作
+    deleteTradeMark(row) {
+        this.$confirm(`你确定删除${row.tmName}, 是否继续?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          // 用户点击确定按钮时
+          //向服务器发起请求
+          const res = await this.$API.tradeMark.reqDeleteTradeMark(row.id)
+          console.log(res)
+          if(res.code == 200) {
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            });  
+            //再次获取品牌列表数据
+            this.getPageList(this.list.length > 1? this.page : this.page-1)          
+          }
+        }).catch(() => {
+          // 用户点击取消按钮时
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });      
+    }
   },
   mounted() {
     this.getPageList();

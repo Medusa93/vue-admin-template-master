@@ -20,3 +20,7 @@ export const reqAddOrUpadteTradeMark = (tradeMark) => {
     return request({ url: '/admin/product/baseTrademark/save', method: 'post', data: tradeMark })
   }
 }
+
+//删除品牌
+//admin/product/baseTrademark/remove/{id}  delete
+export const reqDeleteTradeMark = (id)=>request({url:`/admin/product/baseTrademark/remove/${id}`,method:'delete'});
