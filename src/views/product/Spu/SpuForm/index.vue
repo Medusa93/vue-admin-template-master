@@ -77,6 +77,7 @@
                 v-for="(tag, index) in row.spuSaleAttrValueList"
                 :key="tag.id"
                 style="margin-right: 10px"
+                @close="row.spuSaleAttrValueList.splice(index, 1)"
                 >{{ tag.saleAttrValueName }}</el-tag
               >
               <el-input
@@ -93,12 +94,17 @@
           </el-table-column>
           <el-table-column prop="prop" label="label" width="操作">
             <template slot-scope="{ row, $index }">
-              <el-button type="danger" size="mini">删除</el-button>
+              <el-button
+                type="danger"
+                size="mini"
+                @click="spu.spuSaleAttrList.splice($index, 1)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
-        <el-button type="primary">保存</el-button>
-        <el-button @click="$emit('changeScene', 0)">取消</el-button>
+        <el-button type="primary" @click="addOrUpdate">保存</el-button>
+        <el-button @click="cancel">取消</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -192,15 +198,16 @@ export default {
         //需要把服务器返回的数据进行修改
         let listArr = spuImageResult.data;
         listArr.forEach((item) => {
-          (item.name = item.imgName), (item.url = item.imgUrl);
+          item.name = item.imgName;
+          item.url = item.imgUrl;
         });
         //把整理好的数据赋值给
         this.spuImageList = listArr;
       }
       //获取平台全部销售属性
-      const attrResult = await this.$API.spu.reqBaseSaleAttrList();
-      if (attrResult.code == 200) {
-        this.saleAttrList = attrResult.data;
+      const saleResult = await this.$API.spu.reqBaseSaleAttrList();
+      if (saleResult.code == 200) {
+        this.saleAttrList = saleResult.data;
       }
     },
     // 添加回调按钮
@@ -246,6 +253,50 @@ export default {
       this.spu.spuSaleAttrList.push(newSaleAttr);
       // 清空数据
       this.attrIdAndAttrName = "";
+    },
+    async addOrUpdate() {
+      //整理参数：需要整理照片墙的数据
+      //携带参数：对于图片，需要携带imageName与imageUrl字段
+      this.spu.spuImageList = this.spuImageList.map((item) => {
+        return {
+          imageName: item.name,
+          imageUrl: (item.response && item.response.data) || item.url,
+        };
+      });
+      //发请求
+      const res = await this.$API.spu.reqAddOrUpdateSpu(this.spu);
+      if (res.code == 200) {
+        this.$message.success("保存成功");
+        //通知父组件回到场景0
+        this.$emit("changeScene", {
+          scene: 0,
+          flag: this.spu.id ? "修改" : "添加",
+        });
+      }
+      // 清除数据
+      Object.assign(this._data, this.$options.data());
+    },
+    //点击添加SPU按钮的时候，发请求的函数
+    async addSpuData(category3Id) {
+      this.spu.category3Id = category3Id;
+      //获取品牌的信息
+      const trademarkResult = await this.$API.spu.reqTrademarkList();
+      if (trademarkResult.code == 200) {
+        this.trademarkList = trademarkResult.data;
+      }
+      //获取平台全部销售属性
+      const saleResult = await this.$API.spu.reqBaseSaleAttrList();
+      if (saleResult.code == 200) {
+        this.saleAttrList = saleResult.data;
+      }
+    },
+    cancel() {
+      this.$emit("changeScene", {
+        scene: 0,
+        flag: this.spu.id ? "修改" : "添加",
+      });
+      // 清除数据
+      Object.assign(this._data, this.$options.data());
     },
   },
   computed: {
