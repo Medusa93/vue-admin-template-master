@@ -35,6 +35,7 @@
       <el-card>
         <Detail title="运营活动效果" count="78%">
           <template slot="chart">
+            <ProgressChart></ProgressChart>
           </template>
           <template slot="footer"> 日销售额￥12423 </template>
         </Detail>
@@ -47,11 +48,13 @@
 import Detail from "./Detail";
 import LineChart from "./lineChart";
 import BarChart from "./barChart";
+import ProgressChart from "./progressChart";
 export default {
   components: {
     Detail,
     LineChart,
-    BarChart
+    BarChart,
+    ProgressChart
   },
   data() {
     return {};
